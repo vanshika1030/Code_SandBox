@@ -1,4 +1,4 @@
-import { useCallback, memo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import './CodeEditor.css';
 
@@ -21,9 +21,56 @@ function getLang(filename) {
 }
 
 export default memo(function CodeEditor({ file, onChange, saving }) {
-  const handleChange = useCallback((value) => {
-    onChange?.(value ?? '');
+  const editorRef = useRef(null);
+  const timerRef = useRef(null);
+  const onChangeRef = useRef(onChange);
+  const latestValueRef = useRef('');
+  const dirtyRef = useRef(false);
+  const fileKey = useMemo(() => file?._id || file?.path || file?.name || '', [file]);
+  const [localValue, setLocalValue] = useState(file?.content || '');
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    const nextValue = file?.content || '';
+    setLocalValue(nextValue);
+    latestValueRef.current = nextValue;
+    dirtyRef.current = false;
+
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    requestAnimationFrame(() => editorRef.current?.layout());
+  }, [fileKey]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (dirtyRef.current) onChangeRef.current?.(latestValueRef.current);
+    };
+  }, []);
+
+  const handleChange = useCallback((value) => {
+    const nextValue = value ?? '';
+    setLocalValue(nextValue);
+    latestValueRef.current = nextValue;
+    dirtyRef.current = true;
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      dirtyRef.current = false;
+      onChangeRef.current?.(latestValueRef.current);
+    }, 120);
+  }, []);
+
+  const handleMount = useCallback((editor) => {
+    editorRef.current = editor;
+    requestAnimationFrame(() => editor.layout());
+  }, []);
 
   if (!file) {
     return (
@@ -50,9 +97,10 @@ export default memo(function CodeEditor({ file, onChange, saving }) {
         path={file._id || file.path || file.name}
         height="100%"
         language={getLang(file.name)}
-        value={file.content || ''}
+        value={localValue}
         theme="vs-dark"
         onChange={handleChange}
+        onMount={handleMount}
         options={{
           fontSize: 14,
           fontFamily: "'Fira Code', Consolas, monospace",
@@ -68,6 +116,7 @@ export default memo(function CodeEditor({ file, onChange, saving }) {
           lineNumbers: 'on',
           bracketPairColorization: { enabled: true },
           automaticLayout: true,
+          fixedOverflowWidgets: true,
         }}
       />
     </div>
