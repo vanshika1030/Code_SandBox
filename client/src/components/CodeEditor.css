@@ -1,0 +1,43 @@
+.code-editor {
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.save-indicator {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  z-index: 10;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  padding: 2px 10px;
+  border-radius: 10px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.editor-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-muted);
+}
+
+.editor-empty-icon {
+  font-size: 48px;
+  font-family: var(--font-mono);
+  opacity: 0.3;
+}
+
+.editor-empty p {
+  font-size: 14px;
+}
