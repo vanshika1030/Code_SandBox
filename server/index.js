@@ -15,10 +15,11 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 // middleware
 app.use(compression()); // gzip compression for responses
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: CLIENT_URL }));
 app.use(express.json({ limit: '5mb' }));
 
 // routes

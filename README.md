@@ -89,6 +89,19 @@ npm.cmd run free-ports
 npm.cmd run dev
 ```
 
+For deployment, the frontend can point at a hosted backend by setting:
+
+```txt
+VITE_API_URL=https://your-render-service.onrender.com/api
+```
+
+The backend should allow the hosted frontend by setting:
+
+```txt
+CLIENT_URL=https://your-vercel-app.vercel.app
+MONGO_URI=your_mongodb_atlas_connection_string
+```
+
 ## API Overview
 
 | Method | Endpoint | Purpose |
